@@ -163,3 +163,57 @@ export const recuperarPartidos = async (req, res) => {
     });
   }
 };
+
+export const recuperarResultados = async (req, res) => {
+  try {
+    // Recuperar los resultados
+    const [resultados] = await conmysql.query(
+      `SELECT * FROM resultado`
+    );
+
+    return res.json({
+      Mensaje: "Resultados recuperados exitosamente",
+      cantidad: resultados.length,
+      data: resultados,
+      color: "success",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      Mensaje: "Error en el servidor",
+      error: error.message,
+    });
+  }
+};
+
+export const grabarResultado = async (req, res) => {
+  try {
+    const { id_par, id_res } = req.body;
+
+    if (!id_par || !id_res) {
+      return res.status(400).json({
+        Mensaje: "Error: Todos los campos son requeridos",
+        cantidad: 0,
+        data: [],
+        color: "danger",
+      });
+    }
+
+    // Actualizar el resultado del partido
+    const [result] = await conmysql.query(
+      `UPDATE partido SET id_res = ?, estado_par = 'cerrado' WHERE id_par = ?`,
+      [id_res, id_par]
+    );
+
+    return res.json({
+      Mensaje: "Resultado del partido actualizado exitosamente",
+      cantidad: result.affectedRows,
+      data: { id_par, id_res },
+      color: "success",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      Mensaje: "Error en el servidor",
+      error: error.message,
+    });
+  }
+};
