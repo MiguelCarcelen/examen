@@ -1,16 +1,24 @@
 import { Router } from "express";
 import {
+    grabarResultado,
     login,
+    recuperarPartidos,
+    recuperarResultados,
+    registrarPartido, registrarPronostico
 } from "../controladores/examen2pCtrl.js";
 const router = Router();
 // armar nuestras rutas
 
-// router.get("/listarFacturaDetalles", listarFacturaDetalles);
-// router.get("/listarFacturaDetallesActivas", listarFacturaDetallesActivas);
-// router.post("/getFacturaDetalleID", getFacturaDetalleID);
-// router.post("/getDetalleFacturaID", getFacturaPorID);
-// router.post("/insertFacturaDetalle", insertFacturaDetalle);
-// router.post("/updateFacturaDetalle", updateFacturaDetalle);
-// router.post("/eliminarFacturaDetalle", eliminarFacturaDetalle);
+
 router.post("/login", login);
+router.post("/registrarPartido", registrarPartido);
+router.post("/registrarPronostico", registrarPronostico);
+router.post("/recuperarPartidos", recuperarPartidos);
+router.post("/recuperarResultados", recuperarResultados);
+router.post("/grabarResultado", grabarResultado);
+
+
+
+
+
 export default router;

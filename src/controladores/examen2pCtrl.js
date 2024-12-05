@@ -52,4 +52,114 @@ export const login = async (req, res) => {
       });
     }
   };
+  export const registrarPartido = async (req, res) => {
+    try {
+      const { eq_uno, eq_dos, fecha_par, estado_par } = req.body;
   
+      // Validar que se envían los campos requeridos
+      if (!eq_uno || !eq_dos || !fecha_par || !estado_par) {
+        return res.status(400).json({
+          Mensaje: "Error: Todos los campos son requeridos",
+          cantidad: 0,
+          data: [],
+          color: "danger",
+        });
+      }
+  
+      // Insertar el partido en la base de datos
+      const [result] = await conmysql.query(
+        `INSERT INTO partido (eq_uno, eq_dos, fecha_par, estado_par) VALUES (?, ?, ?, ?)`,
+        [eq_uno, eq_dos, fecha_par, estado_par]
+      );
+  
+      return res.json({
+        Mensaje: "Partido registrado exitosamente",
+        cantidad: result.affectedRows,
+        data: { id_par: result.insertId, eq_uno, eq_dos, fecha_par, estado_par },
+        color: "success",
+      });
+    } catch (error) {
+      // Manejo de errores del servidor
+      return res.status(500).json({
+        Mensaje: "Error en el servidor",
+        error: error.message,
+      });
+    }
+
+  };
+  export const registrarPronostico = async (req, res) => {
+  try {
+    const { id_usr, id_par, id_res, valor } = req.body;
+
+    // Validar que se envían los campos requeridos
+    if (!id_usr || !id_par || !id_res || !valor) {
+      return res.status(400).json({
+        Mensaje: "Error: Todos los campos son requeridos",
+        cantidad: 0,
+        data: [],
+        color: "danger",
+      });
+    }
+
+    // Verificar si el partido está activo
+    const [partido] = await conmysql.query(
+      `SELECT estado_par FROM partido WHERE id_par = ?`,
+      [id_par]
+    );
+
+    if (partido.length === 0 || partido[0].estado_par !== 'activo') {
+      return res.status(400).json({
+        Mensaje: "Error: El partido no está activo o no existe",
+        cantidad: 0,
+        data: [],
+        color: "danger",
+      });
+    }
+
+    // Insertar el pronóstico en la base de datos
+    const [result] = await conmysql.query(
+      `INSERT INTO pronostico (id_usr, id_par, id_res, valor, fecha_registro) VALUES (?, ?, ?, ?, NOW())`,
+      [id_usr, id_par, id_res, valor]
+    );
+
+    return res.json({
+      Mensaje: "Pronóstico registrado exitosamente",
+      cantidad: result.affectedRows,
+      data: { id_pron: result.insertId, id_usr, id_par, id_res, valor },
+      color: "success",
+    });
+  } catch (error) {
+    // Manejo de errores del servidor
+    return res.status(500).json({
+      Mensaje: "Error en el servidor",
+      error: error.message,
+    });
+  }
+};
+
+
+export const recuperarPartidos = async (req, res) => {
+  try {
+    // Recuperar los partidos activos
+    const [partidos] = await conmysql.query(
+      `SELECT p.id_par, e1.nombre_eq AS equipo_uno, e2.nombre_eq AS equipo_dos, p.fecha_par, p.estado_par 
+       FROM partido p
+       JOIN equipo e1 ON p.eq_uno = e1.id_eq
+       JOIN equipo e2 ON p.eq_dos = e2.id_eq
+       WHERE p.estado_par = 'activo'`
+    );
+
+    return res.json({
+      Mensaje: "Partidos activos recuperados exitosamente",
+      cantidad: partidos.length,
+      data: partidos,
+      color: "success",
+    });
+  } catch (error) {
+    // Manejo de errores del servidor
+    return res.status(500).json({
+      Mensaje: "Error en el servidor",
+      error: error.message,
+    });
+  }
+};
